@@ -1,0 +1,116 @@
+1. Создать таблицу с основной информацией о сотрудниках: ФИО, дата рождения, 
+		дата начала работы, должность, уровень сотрудника 
+		(jun, middle, senior, lead), уровень зарплаты, идентификатор отдела, 
+		наличие/отсутствие прав(True/False). При этом в таблице обязательно 
+		должен быть уникальный номер для каждого сотрудника.
+CREATE TABLE data_employees
+(
+	Id SERIAL PRIMARY KEY,
+	firstname CHARACTER VARYING (15),
+	secondname CHARACTER VARYING (15),
+	date_of_birth DATE,
+	date_of_employment DATE,
+	post CHARACTER VARYING (15),
+	employee_level CHARACTER VARYING (7),
+	salary INTEGER,
+	department CHARACTER VARYING (5),
+	rights BOOLEAN
+)
+
+insert into data_employees (firstname,secondname,date_of_birth,date_of_employment,post,
+							employee_level,salary,department,rights)
+values 	('Андрей','Смирнов','12.05.1998','15.07.2014','аналитик','middle',150,'IT',False),
+		('Сергей','Парамонов', '27.09.2003', '23.11.2016','специалист','jun',110,'IT',False),
+		('Павел','Петухов', '05.11.1989', '15.07.2014','гл. бухгалтер','senior',180,'Fin',True),
+		('Юлия','Мерзликина', '14.01.1997', '03.08.2018','специалист','middle',130,'IT',False),
+		('Виктория','Суворова', '21.10.1985','15.07.2014','руководитель','lead',200,'IT',True),
+		('Дмитрий','Белинский', '07.12.1991','28.11.2019','бухгалтер','jun',120,'Fin',False),
+		('Александр','Петров', '18.03.2001','15.07.2014','сис. админ.','middle',150,'IT',True)
+
+2. Для будущих отчетов аналитики попросили вас создать еще одну таблицу с информацией 
+по отделам – в таблице должен быть идентификатор для каждого отдела, название отдела 
+(например. Бухгалтерский или IT отдел), ФИО руководителя и количество сотрудников.
+
+create table data_department
+(
+	Id SERIAL PRIMARY KEY,
+	name_department CHARACTER VARYING (5),
+	name_director CHARACTER VARYING (20),
+	count_employee INTEGER
+)
+
+insert into data_department (name_department,name_director,count_employee) 
+values ('IT','Виктория Суворова',4),('Fin','Павел Петухов',2)
+
+
+3. На кону конец года и необходимо выплачивать сотрудникам премию. 
+Премия будет выплачиваться по совокупным оценкам, которые сотрудники получают 
+в каждом квартале года. Создайте таблицу, в которой для каждого сотрудника 
+будут его оценки за каждый квартал. Диапазон оценок от A – самая высокая, до E – самая низкая.
+
+create table bonus_employee
+(
+	Id SERIAL PRIMARY KEY,
+	first_quarter CHARACTER VARYING (1),
+	second_quarter CHARACTER VARYING (1),
+	third_quarter CHARACTER VARYING (1),
+	fourth_quarter CHARACTER VARYING (1)
+)
+
+insert into bonus_employee (first_quarter,second_quarter,third_quarter,fourth_quarter)
+values 	('B','B','C','D'),('E','B','C','D'),('A','B','C','A'),('C','E','D','B'),
+	('A','B','A','A'),('B','E','E','D'),('B','C','C','B')
+
+4. Несколько уточнений по предыдущим заданиям – в первой таблице должны быть записи 
+как минимум о 5 сотрудниках, которые работают как минимум в 2-х разных отделах. 
+Содержимое соответствующих атрибутов остается на совесть вашей фантазии, но, 
+желательно соблюдать осмысленность и правильно выбирать типы данных 
+(для зарплаты – числовой тип, для ФИО – строковый и т.д.)
+
+
+
+5. Ваша команда расширяется и руководство запланировало открыть новый отдел – 
+отдел Интеллектуального анализа данных. На начальном этапе в команду наняли одного 
+руководителя отдела и двух сотрудников. Добавьте необходимую информацию в соответствующие таблицы.
+
+insert into data_employees (firstname,secondname,date_of_birth,date_of_employment,post,
+				employee_level,salary,department,rights)
+values 	('Егор','Филатов','22.04.1997','20.11.2022','руководитель','senior',180,'IDA',True),
+	('София','Немцова','10.10.2000','20.11.2022','специалист','jun',100,'IDA',False),
+	('Семен','Дарницкий','28.06.1999','20.11.2022','специалист','jun',105,'IDA',False)
+
+insert into data_department (name_department,name_director,count_employee) 
+values ('IDA','Егор Филатов',3)
+
+insert into bonus_employee (first_quarter,second_quarter,third_quarter,fourth_quarter)
+values 	('','','',''),('','','',''),('','','','')
+
+
+6. Теперь пришла пора анализировать наши данные – напишите запросы для получения следующей информации:
+
+6.1 Уникальный номер сотрудника, его ФИО и стаж работы – для всех сотрудников компании
+
+SELECT id, firstname, secondname, (CURRENT_DATE-date_of_employment)/365 as стаж from data_employees
+
+6.2 Уникальный номер сотрудника, его ФИО и стаж работы – только первых 3-х сотрудников
+
+SELECT id, firstname, secondname, (CURRENT_DATE-date_of_employment)/365 as стаж from data_employees where id<4
+
+
+6.3 Уникальный номер сотрудников - водителей
+
+SELECT id from data_employees where rights=True
+
+6.4 Выведите номера сотрудников, которые хотя бы за 1 квартал получили оценку D или E
+
+SELECT id from bonus_employee where first_quarter IN ('D' , 'E')
+				or second_quarter IN ('D' , 'E')
+				or third_quarter IN ('D' , 'E')
+				or fourth_quarter IN ('D' , 'E')
+
+6.5 Выведите самую высокую зарплату в компании.
+
+SELECT max(salary) from data_employees
+
+
+
